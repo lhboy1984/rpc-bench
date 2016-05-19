@@ -6,7 +6,7 @@ import (
 )
 
 func SendNRequests(n int) error {
-	cli, err := NewGrpcClient("localhost:9090")
+	cli, err := NewGrpcStreamClient("localhost:9090")
 	if err != nil {
 		return err
 	}

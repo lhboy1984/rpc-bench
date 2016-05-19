@@ -68,6 +68,7 @@ const _ = grpc.SupportPackageIsVersion2
 
 type MathServiceClient interface {
 	Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*AddReply, error)
+	AddByStream(ctx context.Context, opts ...grpc.CallOption) (MathService_AddByStreamClient, error)
 }
 
 type mathServiceClient struct {
@@ -87,10 +88,42 @@ func (c *mathServiceClient) Add(ctx context.Context, in *AddRequest, opts ...grp
 	return out, nil
 }
 
+func (c *mathServiceClient) AddByStream(ctx context.Context, opts ...grpc.CallOption) (MathService_AddByStreamClient, error) {
+	stream, err := grpc.NewClientStream(ctx, &_MathService_serviceDesc.Streams[0], c.cc, "/mathservice.MathService/AddByStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &mathServiceAddByStreamClient{stream}
+	return x, nil
+}
+
+type MathService_AddByStreamClient interface {
+	Send(*AddRequest) error
+	Recv() (*AddReply, error)
+	grpc.ClientStream
+}
+
+type mathServiceAddByStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *mathServiceAddByStreamClient) Send(m *AddRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *mathServiceAddByStreamClient) Recv() (*AddReply, error) {
+	m := new(AddReply)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // Server API for MathService service
 
 type MathServiceServer interface {
 	Add(context.Context, *AddRequest) (*AddReply, error)
+	AddByStream(MathService_AddByStreamServer) error
 }
 
 func RegisterMathServiceServer(s *grpc.Server, srv MathServiceServer) {
@@ -115,6 +148,32 @@ func _MathService_Add_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MathService_AddByStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(MathServiceServer).AddByStream(&mathServiceAddByStreamServer{stream})
+}
+
+type MathService_AddByStreamServer interface {
+	Send(*AddReply) error
+	Recv() (*AddRequest, error)
+	grpc.ServerStream
+}
+
+type mathServiceAddByStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *mathServiceAddByStreamServer) Send(m *AddReply) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *mathServiceAddByStreamServer) Recv() (*AddRequest, error) {
+	m := new(AddRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 var _MathService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "mathservice.MathService",
 	HandlerType: (*MathServiceServer)(nil),
@@ -124,18 +183,26 @@ var _MathService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _MathService_Add_Handler,
 		},
 	},
-	Streams: []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "AddByStream",
+			Handler:       _MathService_AddByStream_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 }
 
 var fileDescriptor0 = []byte{
-	// 134 bytes of a gzipped FileDescriptorProto
+	// 156 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0x12, 0xcc, 0x4d, 0x2c, 0xc9,
 	0x28, 0x4e, 0x2d, 0x2a, 0xcb, 0x4c, 0x4e, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x46,
 	0x12, 0x52, 0xd2, 0xe0, 0xe2, 0x72, 0x4c, 0x49, 0x09, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x11,
 	0xe2, 0xe1, 0x62, 0x74, 0x94, 0x60, 0x54, 0x60, 0xd4, 0x60, 0x0d, 0x62, 0x4c, 0x04, 0xf1, 0x9c,
 	0x24, 0x98, 0x20, 0xbc, 0x24, 0x25, 0x09, 0x2e, 0x0e, 0xb0, 0xca, 0x82, 0x9c, 0x4a, 0x90, 0x4c,
-	0x04, 0x4c, 0x5d, 0x85, 0x91, 0x1b, 0x17, 0xb7, 0x2f, 0xd0, 0xc8, 0x60, 0x88, 0x91, 0x42, 0xe6,
-	0x5c, 0xcc, 0x40, 0x85, 0x42, 0xe2, 0x7a, 0xc8, 0x56, 0x23, 0x2c, 0x91, 0x12, 0xc5, 0x94, 0x00,
-	0x9a, 0xa9, 0xc4, 0x90, 0xc4, 0x06, 0x76, 0x9f, 0x31, 0x20, 0x00, 0x00, 0xff, 0xff, 0x4f, 0xe1,
-	0x1f, 0x19, 0xb4, 0x00, 0x00, 0x00,
+	0x04, 0x4c, 0x5d, 0x85, 0x51, 0x37, 0x23, 0x17, 0xb7, 0x2f, 0xd0, 0xcc, 0x60, 0x88, 0x99, 0x42,
+	0xe6, 0x5c, 0xcc, 0x40, 0x95, 0x42, 0xe2, 0x7a, 0xc8, 0x76, 0x23, 0x6c, 0x91, 0x12, 0xc5, 0x94,
+	0x00, 0x1a, 0xaa, 0xc4, 0x20, 0xe4, 0xcc, 0xc5, 0x0d, 0xe4, 0x39, 0x55, 0x06, 0x97, 0x14, 0xa5,
+	0x26, 0xe6, 0x92, 0x6e, 0x80, 0x06, 0xa3, 0x01, 0x63, 0x12, 0x1b, 0xd8, 0x97, 0xc6, 0x80, 0x00,
+	0x00, 0x00, 0xff, 0xff, 0xaf, 0x58, 0x5c, 0x8d, 0xfa, 0x00, 0x00, 0x00,
 }

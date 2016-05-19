@@ -4,6 +4,7 @@ package mathservice;
 
 service MathService {
     rpc Add (AddRequest) returns (AddReply) {}
+    rpc AddByStream (stream AddRequest) returns (stream AddReply) {}
 }
 
 message AddRequest{

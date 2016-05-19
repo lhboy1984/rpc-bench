@@ -6,6 +6,7 @@ import (
 	"runtime"
 
 	"git.apache.org/thrift.git/lib/go/thrift"
+	_ "github.com/icattlecoder/godaemon"
 	"github.com/lhboy1984/rpc-bench/thrift/mathservice"
 )
 
@@ -13,7 +14,6 @@ func main() {
 	fmt.Println(runtime.GOMAXPROCS(8))
 	transportFactory := thrift.NewTFramedTransportFactory(thrift.NewTTransportFactory())
 	protocolFactory := thrift.NewTBinaryProtocolFactoryDefault()
-	//protocolFactory := thrift.NewTCompactProtocolFactory()
 
 	serverTransport, err := thrift.NewTServerSocket("127.0.0.1:9090")
 	if err != nil {
